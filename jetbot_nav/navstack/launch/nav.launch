@@ -1,0 +1,135 @@
+<launch>
+    <arg name="vehicle" default="default" doc="Name of vehicle."/>
+    <arg name="pkg_name" default="navpub"/>
+    <arg name="node_name" default="move_base"/>
+    <arg name="pkg_path" default="$(find navstack)"/>
+    <arg name="map_file" default="project.yaml" doc="Which map do you want ot use."/>
+    <arg name="enable" default="false"/>
+    <arg name="global_planner" default="global_planner"/>
+    <arg name="local_planner" default="dwa" doc="Which local planner do you want to use. Now can use [dwa] or [teb]"/>
+    <arg name="open_rviz" default="false" doc="open rviz or not"/>
+    <arg name="costmap_plugin_sensor_source" default="obstacle_layer/laser_scan_sensor"/>
+          
+
+    <node name="map_server" pkg="map_server" type="map_server" args="/home/jetbot/$(arg map_file)"/>
+    
+    <group ns="J1">
+    
+    <remap from="/J1/move_base_simple/goal" to="/move_base_simple/goal"/>
+    <remap from="/J1/map" to="/map"/>
+    <!-- amcl -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <rosparam command="load" file="$(arg pkg_path)/param/amcl/J1.yaml"/>
+        <param name="base_frame_id" type="str" value="J1_base_link"/>
+        <param name="odom_frame_id" type="str" value="J1_odom"/>
+    </node>
+
+    <!-- Navigation stack -->
+    <!-- move_base -->
+    <node pkg="$(arg node_name)" type="$(arg node_name)" name="$(arg node_name)" respawn="false" clear_params="true">
+        <!-- parameters -->
+        <!-- global_planner -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/global_planner/$(arg global_planner)/$(arg vehicle).yaml"/>
+
+        <!-- local_planner -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/local_planner/$(arg local_planner)/$(arg vehicle).yaml"/>
+
+        <!-- global_costmap -->
+            <!-- observation sources located in costmap_common.yaml -->
+            <rosparam ns="global_costmap" command="load" file="$(arg pkg_path)/param/$(arg node_name)/common_costmap/$(arg vehicle).yaml"/>
+
+            <!-- frame parameter -->
+            <param name="global_costmap/robot_base_frame" type="str" value="J1_base_link"/>
+            <param name="global_costmap/$(arg costmap_plugin_sensor_source)/sensor_frame" type="str" value="J1_laser"/>
+
+            <!-- topic parameter -->
+            <param name="global_costmap/$(arg costmap_plugin_sensor_source)/topic" type="str" value="/J1/scan"/>
+
+            <!-- costmapt parameter-->
+            <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/global_costmap/$(arg vehicle).yaml"/>
+
+        <!-- local_costmap -->
+            <!-- observation sources located in costmap_common.yaml -->
+            <rosparam ns="local_costmap" command="load" file="$(arg pkg_path)/param/$(arg node_name)/common_costmap/$(arg vehicle).yaml"/>
+
+            <!-- frame parameter -->
+            <param name="local_costmap/robot_base_frame" type="str" value="J1_base_link"/>
+            <param name="local_costmap/global_frame" type="str" value="J1_odom"/>
+            <param name="local_costmap/$(arg costmap_plugin_sensor_source)/sensor_frame" type="str" value="J1_laser"/>
+
+            <!-- topic parameter -->
+            <param name="local_costmap/$(arg costmap_plugin_sensor_source)/topic" type="str" value="/J1/scan"/>
+
+            <!-- costmapt parameter-->
+            <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/local_costmap/$(arg vehicle).yaml"/>
+        
+
+        <!-- move_base -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/$(arg vehicle).yaml"/>
+
+    </node>
+    </group>
+    
+    <group ns="J2" if="$(arg enable)">
+    <remap from="/J2/move_base_simple/goal" to="/move_base_simple/goal"/>
+    <remap from="/J2/map" to="/map"/>
+    <!-- amcl -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <rosparam command="load" file="$(arg pkg_path)/param/amcl/J2.yaml"/>
+        <param name="base_frame_id" type="str" value="J2_base_link"/>
+        <param name="odom_frame_id" type="str" value="J2_odom"/>
+    </node>
+
+    <!-- Navigation stack -->
+    <!-- move_base -->
+    <node pkg="$(arg node_name)" type="$(arg node_name)" name="$(arg node_name)" respawn="false" clear_params="true">
+        <!-- parameters -->
+        <!-- global_planner -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/global_planner/$(arg global_planner)/$(arg vehicle).yaml"/>
+
+        <!-- local_planner -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/local_planner/$(arg local_planner)/$(arg vehicle).yaml"/>
+
+        <!-- global_costmap -->
+            <!-- observation sources located in costmap_common.yaml -->
+            <rosparam ns="global_costmap" command="load" file="$(arg pkg_path)/param/$(arg node_name)/common_costmap/$(arg vehicle).yaml"/>
+
+            <!-- frame parameter -->
+            <param name="global_costmap/robot_base_frame" type="str" value="J2_base_link"/>
+            <param name="global_costmap/$(arg costmap_plugin_sensor_source)/sensor_frame" type="str" value="J2_laser"/>
+
+            <!-- topic parameter -->
+            <param name="global_costmap/$(arg costmap_plugin_sensor_source)/topic" type="str" value="/J2/scan"/>
+
+            <!-- costmapt parameter-->
+            <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/global_costmap/$(arg vehicle).yaml"/>
+
+        <!-- local_costmap -->
+            <!-- observation sources located in costmap_common.yaml -->
+            <rosparam ns="local_costmap" command="load" file="$(arg pkg_path)/param/$(arg node_name)/common_costmap/$(arg vehicle).yaml"/>
+
+            <!-- frame parameter -->
+            <param name="local_costmap/robot_base_frame" type="str" value="J2_base_link"/>
+            
+            <param name="local_costmap/global_frame" type="str" value="J2_odom"/>
+
+            <param name="local_costmap/$(arg costmap_plugin_sensor_source)/sensor_frame" type="str" value="J2_laser"/>
+
+            <!-- topic parameter -->
+            <param name="local_costmap/$(arg costmap_plugin_sensor_source)/topic" type="str" value="/J2/scan"/>
+
+            <!-- costmapt parameter-->
+            <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/local_costmap/$(arg vehicle).yaml"/>
+        
+
+        <!-- move_base -->
+        <rosparam command="load" file="$(arg pkg_path)/param/$(arg node_name)/$(arg vehicle).yaml"/>
+
+    </node>
+    </group>
+    <group if="$(arg open_rviz)">
+        <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(arg pkg_path)/rviz/jetfalcon_nav_$(arg local_planner).rviz"/>
+    </group>
+
+	
+</launch>

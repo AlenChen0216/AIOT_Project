@@ -1,0 +1,9 @@
+car-狀態-類別-最大乘載力
+
+group(檢查task要多少車):檢查沒事做的小車 然後分類理貨或送貨
+		裡或:個別car要處理的merchan
+		送貨:到定點等待
+
+1. return carid taskid 一堆的merchan跟quantity
+2. 依據merchanid從小拿到大 拿完為止
+3.解決task的synchronization problem

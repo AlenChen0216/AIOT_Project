@@ -1,0 +1,4 @@
+merchanID-remain
+taskID-merchanID-quantity
+department-taskID
+taskID-executed?

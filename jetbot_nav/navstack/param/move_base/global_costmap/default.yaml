@@ -1,0 +1,12 @@
+# Reference: http://wiki.ros.org/costmap_2d
+global_costmap:
+    global_frame: map
+    robot_base_frame: base_link
+    update_frequency: 1.0
+    publish_frequency: 1.0
+    transform_tolerance: 10.0
+    rolling_window: false
+    static_map: true
+    plugins:
+        - {name: static_map_layer,              type: "costmap_2d::StaticLayer"}
+        - {name: inflation_layer,               type: "costmap_2d::InflationLayer"}

@@ -1,0 +1,248 @@
+const http=require('http');
+const hostname='0.0.0.0';
+const port =3000;
+const fs=require('fs');
+//連接mysql
+var url=require('url');
+var mysql = require('mysql');
+const { connect } = require('http2');
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : 'password',
+  database : 'AIOT'
+});
+/*
+connection.connect()
+connection.query('SELECT * from `ID2Name`', function (error, results, fields) {
+  if (error) throw error;
+  console.log(results[0]['ID']);
+  res.end(results[0]['ID']+" ");
+  });
+connection.end();
+*/
+function readData(res,file){
+  fs.readFile(__dirname+"/"+file,'utf-8',function(err,data){
+    if(err){
+      res.end("not found");
+    }
+    else{
+      res.end(data);
+    }
+  })
+}
+function stdSQLStr(input){
+  var str=input+"";
+  return "'"+str+"'";
+}
+function stdSQLVal(input0,input1,input2,input3){
+  var result;
+  result="VALUES("+input0;
+  if(input1!=undefined){
+    result=result+","+input1;
+  }
+  if(input2!=undefined){
+    result=result+","+input2;
+  }
+  if(input3!=undefined){
+    result=result+","+input3;
+  }
+  return result+");";
+}
+function addMerchan(params){
+
+}
+
+function sqlQue(link,command,result){
+  link.query(command,function(error, results, fields){
+    if (error){
+      throw error;
+    }
+    else{
+      result=results;
+      console.log("r");
+      console.log(results);
+    }
+  });
+}
+connection.connect();
+console.log("123,456".split("."));
+const server=http.createServer((req,res)=>{
+  //
+  res.statusCode=200;
+  res.setHeader('content-Type','text/plain');
+  var params = url.parse(req.url, true).query;
+  switch (params.command){
+    //手動加入商品
+    case "addMerchan":
+      console.log(params);
+      var com="INSERT INTO id2name "+stdSQLVal(stdSQLStr(params.id),stdSQLStr(params.name));
+      //connection.connect()
+      connection.query(com, function (error, results, fields){
+        if (error){
+          throw error;
+        } 
+        console.log("added");
+        res.end("added");
+        console.log("quit");
+        //connection.end();
+        });
+      
+      break;
+    case "listMerchan":
+      //手動查商品庫存
+      var com="select * from id2name;";
+      //connection.connect()
+      console.log("connected");
+      var queued=0;
+      connection.query(com, function (error, results, fields){
+        queued=1;
+        if (error){
+          throw error;
+        }
+        console.log(results);
+        res.end(results[0]['name']);
+        //connection.end();
+        });
+      break;
+    case "addTask":
+      //新增一筆task 手動或送貨小車
+      //params:taskID,department,tup(用分號連接的2entry無括號tuple 例如"1,2;3,4"代表1號商品*2+3號商品*4)
+      //會把tup拆解放進未完成task
+      //http:127.0.0.1:3000?command=addTask&taskID=1&department=1&tup=1,2;3,4
+      var tup=params.tup.split(";");
+      var taskID=params.taskID;
+      var department=params.department
+      var gcom="insert into department2taskid "+stdSQLVal(stdSQLStr(department),stdSQLStr(taskID));
+      sqlQue(connection,gcom);
+      console.log(tup);
+      console.log(tup[0]);
+      console.log(tup[1]);
+      tup.forEach(i => {
+        console.log("this is i");
+        console.log(i);
+        var merchanID=i.split(",")[0];
+        var quantity=i.split(",")[1];
+        var com="insert into taskSingleRow "+stdSQLVal(stdSQLStr(taskID),stdSQLStr(merchanID),quantity,"0");
+        sqlQue(connection,com);
+        console.log("added");
+        console.log(merchanID+","+quantity);
+      });
+      res.end("success");
+      break;
+    case "startTransferring":
+      //理貨小車從貨架上取下某些商品
+      var taskID=params.taskID;
+      var quantity=params.quantity;
+      var merchanID=params.merchanID;
+      var com="insert into `merchantransporting` "+stdSQLVal(stdSQLStr(merchanID), quantity);
+      sqlQue(connection,com);
+      var com2="SELECT * FROM `tasktransporting` WHERE `taskid`="+stdSQLStr(taskID)+" and `merchanid`="+stdSQLStr(merchanID)+";";
+      console.log(com2);
+      connection.query(com2, function (err, results, fields){
+        if (err){
+          //throw err;
+        }
+        //console.log("--");
+        //return results;
+        if(results[0]==undefined){
+          var com3="select * from `tasksinglerow` where `taskid`="+stdSQLStr(taskID)+" and `merchanid`="+stdSQLStr(merchanID);
+          connection.query(com3, function (err, data, fields){
+            if (err){
+              throw err;
+            }
+            console.log(data);
+            var com4="insert into `tasktransporting` "+stdSQLVal(stdSQLStr(taskID),stdSQLStr(merchanID),data[0]['quantity']);
+            sqlQue(connection,com4);
+            res.end("successfully record a task as transporting");
+          });
+        }
+        else{
+          console.log("find");
+          console.log(results[0]);
+          res.end("successfully found existed task");
+        }
+      });
+      
+      
+      
+      break;
+    case "transferArrive":
+      //理貨小車抵達交貨地點
+      var com="select * from `merchantransporting`";
+      connection.query(com, function (err, cargos, fields){
+        if(err){
+          throw err;
+        }
+        var breaker0=0;
+        cargos.forEach(function(i){
+          console.log(i);
+          var cargoid=i['merchan'];
+          var com2="select * from `tasktransporting` where `merchanid`="+stdSQLStr(cargoid);
+          connection.query(com2, function (err1, executing, fields){
+            if (err1){
+              throw err1;
+            }
+            var breaker1=0;
+            console.log(executing);
+            executing.forEach(function(task){
+              a=parseInt(i['quantity']);
+              b=parseInt(task['quantity']);
+              console.log(task);
+              if(breaker1==1){
+                return;
+              }
+              if(task['quantity']>i['quantity']){
+                console.log("accomodate");
+                var com3="update `tasktransporting` set `quantity`="+(b-a)+" where `taskid`="+stdSQLStr(task['taskid'])+" and `merchanid`="+stdSQLStr(task['merchanid']);
+                var com4="delete from `merchantransporting` where `merchan`="+stdSQLStr(task['merchanid']);
+                console.log(com3);
+                console.log(com4);
+                sqlQue(connection,com3);
+                sqlQue(connection,com4);
+                breaker1=1;
+                if(i==cargos.at(-1)){
+                  res.end("success");
+                }
+              }
+              else{
+                console.log("out"); 
+                var com3="delete from `tasktransporting` where `taskid`="+stdSQLStr(task['taskid'])+" and `merchanid`="+stdSQLStr(task['merchanid']);
+                var com4="update `tasksinglerow` set `executed`=1 where taskid="+stdSQLStr(task['taskid'])+"and `merchanid="+stdSQLStr(task['merchanid']);
+                var com5="update `merchantransporting` set quantity= "+(a-b)+" where `merchan`="+stdSQLStr(task['merchanid']);
+                console.log(com3);
+                console.log(com4);
+                console.log(com5);
+                sqlQue(connection,com3);
+                sqlQue(connection,com4);
+                sqlQue(connection,com5);
+                var com6="delete from `merchantransporting` where `merchan`="+stdSQLStr(task['merchanid']);
+                  sqlQue(connection,com6);
+                  breaker1=1;
+                i['quantity']-=task['quantity'];
+                console.log('quantity');
+                console.log(i['quantity']);
+                if(i==cargos.at(-1)){
+                  res.end("success");
+                }
+              }
+            });
+          });
+        });
+        
+      });  
+      
+      break;
+    case "takeTask":
+      //理貨小車開始運作 依FCFS承辦task
+      var com="select * from `tasksinglerow` where `executed`=0;";
+      connection.query(com, function (err1, result, fields){
+        res.end(result[0]['taskid']+","+result[0]['merchanid']+","+result[0]['quantity']);
+      });
+      
+  }
+  return;
+});
+server.listen(port,hostname,()=>{
+  console.log('server running at http://'+hostname+":"+port);
+});

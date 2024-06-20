@@ -1,0 +1,10 @@
+# Reference: http://wiki.ros.org/costmap_2d
+local_costmap:
+    global_frame: odom
+    rolling_window: true
+    #static_map: false
+    width: 5.0
+    height: 5.0
+    plugins:
+        - {name: static_map_layer,              type: "costmap_2d::StaticLayer"}
+        - {name: inflation_layer,               type: "costmap_2d::InflationLayer"}

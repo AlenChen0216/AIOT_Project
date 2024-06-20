@@ -1,0 +1,38 @@
+送出訂單:
+	在ip:3000填表格
+
+取得一個task:
+params:
+ command=taskTask
+return:
+ "idle的carid,承載力,type"(可能多個row)
+ "分隔訊息"
+ "taskid,merchan,quantity"(可能多個row)
+ex:http:127.0.0.1?command=taskTask
+
+理貨小車依照以接取的task從貨架取貨:
+params:
+ command=startTransferring
+ taskID:接取的taskid
+ merchanID:放到車上的貨物
+ quantity:放到車上的貨物數量
+return:
+ 如果已經有執行中的同task,merchanid的訂單回傳"successfully found existed task"
+ else "successfully record a task as transporting"
+ex:http:127.0.0.1?command=startTransferring&taskID=1&merchanID=1&quantity=1
+
+理貨小車在運送貨物到卸貨點後開始卸貨:
+params:
+ command=transferArrive
+ carid
+return:
+ "success"
+ex:http:127.0.0.1?command=transferArrive&carid=0
+
+決定執行的taskid:
+params:
+ command=taskDecided
+ taskID
+return:
+ "success"
+ex:127.0.0.1?command=taskDecided&taskID=1

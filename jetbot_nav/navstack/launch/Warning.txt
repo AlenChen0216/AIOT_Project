@@ -1,0 +1,5 @@
+Navigation 跟 odom 請在小車上執行。
+
+nav 則是在ROS Server上
+
+小車上的馬達控制和相機，則是使用rosrun 來執行

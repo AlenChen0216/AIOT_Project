@@ -1,0 +1,14 @@
+<launch>
+
+    <arg name="vehicle" default="J1"/>
+    <arg name="node_lidar" default="rplidar_ros"/>
+    <arg name="laser_frame_id" default="$(arg vehicle)_laser"/>
+    <group ns="$(arg vehicle)">   
+         <node pkg="tf" type="static_transform_publisher" name="$(arg vehicle)_base_to_laser" args="0.0 0.0 0.0 0.0 0.0 0.0 $(arg vehicle)_base_link $(arg vehicle)_laser 100" /> 
+         <node name="rplidarNode" pkg="$(arg node_lidar)"  type="rplidarNode" output="screen">
+                <param name="frame_id"            type="string" value="$(arg laser_frame_id)"/>
+         </node>
+         
+    </group>
+
+</launch>
