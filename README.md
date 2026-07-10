@@ -11,17 +11,17 @@ The project was designed as a modular AIoT system: customer-facing software mana
 ```mermaid
 flowchart LR
     subgraph APP["Application and Data Layer"]
-        WEB["Customer and Admin Portal<br/>PHP, HTML5, CSS, JavaScript, Bootstrap"]
+        WEB["Customer and Admin Portal<br/>PHP, HTML5, CSS, JavaScript,<br/> Bootstrap"]
         API["Order and Fleet API<br/>Node.js, HTTP"]
-        DB[("MySQL<br/>orders, inventory, vehicles, cargo")]
+        DB[("MySQL<br/>orders, inventory,<br/> vehicles, cargo")]
         WEB -->|orders and status requests| API
         API <--> DB
     end
 
     subgraph CONTROL["Fleet Control Layer"]
         ORCH["Fleet Orchestrator<br/>Python, ROS"]
-        PLAN["Route and Queue Coordination<br/>Main, Plan, Blocking"]
-        MAP["Shared Map and Localization<br/>Gmapping, map_server, AMCL"]
+        PLAN["Route and Queue <br/> Coordination <br/> Main, Plan, Blocking"]
+        MAP["Shared Map and <br/> Localization<br/>Gmapping, map_server,<br/> AMCL"]
         ORCH --> PLAN
         MAP --> PLAN
     end
@@ -29,7 +29,7 @@ flowchart LR
     subgraph ROBOTS["Namespaced Robot Layer - J1, J2, ..."]
         NAV["Per-robot Navigation<br/>move_base, Actionlib, TF"]
         LIDAR["RPLIDAR<br/>scan and laser odometry"]
-        VISION["CSI Camera and YOLOv5n<br/>on-device product detection"]
+        VISION["CSI Camera and YOLOv5n, on-device<br/> product detection"]
         DRIVE["JetBot Motor Control"]
         LIDAR --> NAV
         PLAN --> NAV
