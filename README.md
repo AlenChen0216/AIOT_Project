@@ -11,7 +11,7 @@ The project was designed as a modular AIoT system: customer-facing software mana
 ```mermaid
 flowchart LR
     subgraph APP["Application and Data Layer"]
-        WEB["Customer and Admin Portal<br/>PHP, HTML5, CSS, JavaScript,<br/> Bootstrap"]
+        WEB["Customer and Admin Portal<br/>PHP, HTML5, CSS,<br/> JavaScript, Bootstrap"]
         API["Order and Fleet API<br/>Node.js, HTTP"]
         DB[("MySQL<br/>orders, inventory,<br/> vehicles, cargo")]
         WEB -->|orders and status requests| API
