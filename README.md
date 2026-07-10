@@ -29,7 +29,7 @@ flowchart LR
     subgraph ROBOTS["Namespaced Robot Layer - J1, J2, ..."]
         NAV["Per-robot Navigation<br/>move_base, Actionlib, TF"]
         LIDAR["RPLIDAR<br/>scan and laser odometry"]
-        VISION["CSI Camera and YOLOv5n, on-device<br/> product detection"]
+        VISION["CSI Camera and YOLOv5n<br/> on-device product<br/>detection"]
         DRIVE["JetBot Motor Control"]
         LIDAR --> NAV
         PLAN --> NAV
